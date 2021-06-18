@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-import api from '../../services/api';
+import { weather } from '../../services/weather';
+import { backend }  from '../../services/backend';
 
 import { Title, Form, Error, Clima } from './styles';
 
@@ -10,19 +11,21 @@ const Dashboard = () => {
   const [inputError, setInputError] = useState('');
   const [climas, setClimas] = useState(() => {
     const storageClimas = localStorage.getItem(
-      '@GithubExplorer:climas',
+      '@ClimaExplorer:climas',
     );
 
     if (storageClimas) {
       return JSON.parse(storageClimas);
     }
 
-    return [];
+    return backend.get('/city');
   });
 
   useEffect(() => {
+    
+
     localStorage.setItem(
-      '@GithubExplorer:climas',
+      '@ClimaExplorer:climas',
       JSON.stringify(climas),
     );
   }, [climas]);
@@ -36,10 +39,16 @@ const Dashboard = () => {
     }
 
     try {
-      const response = await api.get(`/data/2.5/weather`, {
+       await backend.post('/city', {
+        firstName: newClima
+       });
+      
+      const response = await weather.get(`/data/2.5/weather`, {
         params: {
             q: newClima,
+            units: "metric",
             appid: process.env.REACT_APP_API_KEY,
+            
         },
     });
     
@@ -83,10 +92,10 @@ const Dashboard = () => {
             />
             <div>
               <strong>{clima.data.name}</strong>
-              <p> Temperatura: {clima.data.main.temp}ºF</p>
-              <p> Temperatura Maxima: {clima.data.main.temp_max}ºF</p>
-              <p> Temperatura Minima: {clima.data.main.temp_min}ºF</p>
-              <p> Humidade: {clima.data.main.humidity}%</p>
+              <p> Temperatura: {clima.data.main.temp}ºC</p>
+              <p> Temperatura Maxima: {clima.data.main.temp_max}ºC</p>
+              <p> Temperatura Minima: {clima.data.main.temp_min}ºC</p>
+              <p> Umidade: {clima.data.main.humidity}%</p>
             </div>
 
             <FiChevronRight size={20} />
